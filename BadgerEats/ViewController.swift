@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  HomeVC.swift
 //  BadgerEats
 //
 //  Created by Mukul Rao on 7/17/23.
@@ -7,13 +7,37 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UITabBarController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        
+        // Instantiate view controllers for different views
+        let home = HomeVC()
+        let settings = SettingsVC()
+        let credits = CreditsVC()
+        
+        // Wrap each view controller in a UINavigationController and set titles
+        let homeNavController = UINavigationController(rootViewController: home)
+        let settingsNavController = UINavigationController(rootViewController: settings)
+        let creditsNavController = UINavigationController(rootViewController: credits)
+        
+        homeNavController.title = "Home"
+        settingsNavController.title = "Settings"
+        creditsNavController.title = "Credits"
+        
+        // Assign view controllers to the tab bar
+        self.setViewControllers([homeNavController, settingsNavController, creditsNavController], animated: true)
+        
+        // Set tab bar colors
+        self.tabBar.tintColor = .orange
+        self.tabBar.barTintColor = .green
+        
+        // Set tab bar icons
+        guard let items = self.tabBar.items else { return }
+        let images = ["house", "gear", "bell"]
+        for i in 0..<min(items.count, images.count) {
+            items[i].image = UIImage(systemName: images[i])
+        }
     }
-
-
 }
-
