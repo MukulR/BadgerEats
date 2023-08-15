@@ -115,14 +115,14 @@ class HomeVC: UIViewController {
         return tableView
     }
     
-    @objc func showModal(title: String) {
+    @objc func showModal(title: String, nutrFacts: [String: CGFloat], ingredients: [String]) {
         let blurEffect = UIBlurEffect(style: .dark)
         blurEffectView = UIVisualEffectView(effect: blurEffect)
         blurEffectView?.frame = view.bounds
         blurEffectView?.alpha = 0.5
         view.addSubview(blurEffectView!)
 
-        modalViewController = ModalViewController(title: title)
+        modalViewController = ModalViewController(title: title, nutrFacts: nutrFacts, ingredients: ingredients)
         modalViewController?.modalPresentationStyle = .overFullScreen
         modalViewController?.modalTransitionStyle = .coverVertical
 
@@ -137,10 +137,6 @@ class HomeVC: UIViewController {
     func dismissModal() {
         blurEffectView?.removeFromSuperview()
         modalViewController?.dismiss(animated: true, completion: nil)
-        
-        if let selectedIndexPath = tableView.indexPathForSelectedRow {
-            tableView.deselectRow(at: selectedIndexPath, animated: true)
-        }
     }
 
     
@@ -160,8 +156,9 @@ extension HomeVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
         let menuItem = menuItems[indexPath.row]
-        showModal(title: menuItem.title)
+        showModal(title: menuItem.title, nutrFacts: menuItem.nutritionData, ingredients: menuItem.ingredients)
     }
 }
 
@@ -172,7 +169,7 @@ extension HomeVC {
                              nutritionData: ["Sodium": 250.0, "Protein": 25.0, "Carbohydrates": 10.0],
                              ingredients: ["Grilled chicken", "Mixed greens", "Tomatoes"])
         let item2 = MenuItem(title: "Margherita Pizza", calories: 300, icons: ["Vegetarian"], rating: 4.0,
-                             nutritionData: ["Sodium": 400.0, "Protein": 15.0, "Carbohydrates": 35.0],
+                             nutritionData: ["Sodium": 250.0, "Protein": 25.0, "Carbohydrates": 10.0, "Fat": 8.0, "Fiber": 5.0, "Calcium": 15.0, "Iron": 2.0, "Vitamin A": 200.0, "Vitamin C": 30.0, "Potassium": 300.0, "Magnesium": 20.0, "Zinc": 1.5, "Cholesterol": 50.0, "Sugar": 5.0, "Folate": 10.0],
                              ingredients: ["Pizza dough", "Tomato sauce", "Fresh mozzarella"])
         let item3 = MenuItem(title: "Salmon Teriyaki", calories: 250, icons: [], rating: 4.2,
                              nutritionData: ["Sodium": 350.0, "Protein": 20.0, "Carbohydrates": 15.0],
