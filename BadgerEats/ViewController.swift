@@ -30,8 +30,7 @@ class ViewController: UITabBarController {
         self.setViewControllers([homeNavController, settingsNavController, creditsNavController], animated: true)
         
         // Set tab bar colors
-        self.tabBar.tintColor = .orange
-        self.tabBar.barTintColor = .green
+        self.tabBar.tintColor = .tintColor
         
         // Set tab bar icons
         guard let items = self.tabBar.items else { return }
