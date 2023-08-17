@@ -12,6 +12,6 @@ struct MenuItem {
     var calories: Int
     var icons: [String]
     var rating: CGFloat
-    var nutritionData: [String: CGFloat]
-    var ingredients: [String]
+    var nutritionData: [String: String]
+    var ingredients: String
 }

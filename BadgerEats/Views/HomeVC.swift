@@ -30,7 +30,22 @@ class HomeVC: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .white
         
-        menuItems = fetchData()
+        // Call the fetchData function
+        fetchData { menuItems, error in
+            if let error = error {
+                print("Error fetching data: \(error)")
+            } else if let menuItems = menuItems {
+                // Store the fetched menu items in a variable or update your UI
+                print("Yes")
+                self.menuItems = menuItems
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
+                }
+
+                // Call any method that updates your UI with the fetched data
+//                self.updateUI(with: menuItems)
+            }
+        }
         
         refreshContainer.addTarget(self, action: #selector(refreshData), for: .valueChanged)
         latest = configureHeaderStack()
@@ -115,7 +130,7 @@ class HomeVC: UIViewController {
         return tableView
     }
     
-    @objc func showModal(title: String, nutrFacts: [String: CGFloat], ingredients: [String]) {
+    @objc func showModal(title: String, nutrFacts: [String: String], ingredients: String) {
         let blurEffect = UIBlurEffect(style: .dark)
         blurEffectView = UIVisualEffectView(effect: blurEffect)
         blurEffectView?.frame = view.bounds
@@ -164,40 +179,54 @@ extension HomeVC: UITableViewDelegate, UITableViewDataSource {
 
 extension HomeVC {
     
-    func fetchData() -> [MenuItem] {
-        let item1 = MenuItem(title: "Grilled Chicken Salad", calories: 200, icons: [], rating: 4.5,
-                             nutritionData: ["Sodium": 250.0, "Protein": 25.0, "Carbohydrates": 10.0],
-                             ingredients: ["Grilled chicken", "Mixed greens", "Tomatoes"])
-        let item2 = MenuItem(title: "Margherita Pizza", calories: 300, icons: ["Vegetarian"], rating: 4.0,
-                             nutritionData: ["Sodium": 250.0, "Protein": 25.0, "Carbohydrates": 10.0, "Fat": 8.0, "Fiber": 5.0, "Calcium": 15.0, "Iron": 2.0, "Vitamin A": 200.0, "Vitamin C": 30.0, "Potassium": 300.0, "Magnesium": 20.0, "Zinc": 1.5, "Cholesterol": 50.0, "Sugar": 5.0, "Folate": 10.0],
-                             ingredients: ["Pizza dough", "Tomato sauce", "Fresh mozzarella"])
-        let item3 = MenuItem(title: "Salmon Teriyaki", calories: 250, icons: [], rating: 4.2,
-                             nutritionData: ["Sodium": 350.0, "Protein": 20.0, "Carbohydrates": 15.0],
-                             ingredients: ["Salmon fillet", "Teriyaki sauce", "Steamed broccoli"])
-        let item4 = MenuItem(title: "Vegetable Stir-Fry", calories: 180, icons: ["Vegan", "Gluten-Free"], rating: 4.1,
-                             nutritionData: ["Sodium": 300.0, "Protein": 10.0, "Carbohydrates": 25.0],
-                             ingredients: ["Mixed vegetables", "Tofu", "Stir-fry sauce"])
-        let item5 = MenuItem(title: "Classic Cheeseburger", calories: 350, icons: [], rating: 4.3,
-                             nutritionData: ["Sodium": 600.0, "Protein": 20.0, "Carbohydrates": 30.0],
-                             ingredients: ["Beef patty", "Cheese", "Burger bun"])
-        let item6 = MenuItem(title: "Pasta Primavera", calories: 280, icons: [], rating: 4.0,
-                             nutritionData: ["Sodium": 320.0, "Protein": 12.0, "Carbohydrates": 40.0],
-                             ingredients: ["Pasta", "Assorted vegetables", "Alfredo sauce"])
-        let item7 = MenuItem(title: "Mango Chicken Curry", calories: 280, icons: [], rating: 4.2,
-                             nutritionData: ["Sodium": 380.0, "Protein": 18.0, "Carbohydrates": 30.0],
-                             ingredients: ["Chicken", "Mango", "Curry sauce"])
-        let item8 = MenuItem(title: "Quinoa Salad", calories: 220, icons: [], rating: 4.4,
-                             nutritionData: ["Sodium": 200.0, "Protein": 8.0, "Carbohydrates": 35.0],
-                             ingredients: ["Quinoa", "Cucumber", "Feta cheese"])
-        let item9 = MenuItem(title: "Beef Tacos", calories: 300, icons: [], rating: 4.1,
-                             nutritionData: ["Sodium": 450.0, "Protein": 18.0, "Carbohydrates": 25.0],
-                             ingredients: ["Beef", "Tortillas", "Salsa"])
-        let item10 = MenuItem(title: "Veggie Omelette", calories: 220, icons: ["Gluten-Free"], rating: 4.3,
-                              nutritionData: ["Sodium": 280.0, "Protein": 15.0, "Carbohydrates": 10.0],
-                              ingredients: ["Eggs", "Bell peppers", "Spinach"])
+    func fetchData(completion: @escaping ([MenuItem]?, Error?) -> Void) {
+        guard let url = URL(string: "https://api.mukulrao.com/badgereats/getmenu/rheta/lunch/week") else {
+            completion(nil, NSError(domain: "Invalid URL", code: 0, userInfo: nil))
+            return
+        }
         
-        return [item1, item2, item3, item4, item5, item6, item7, item8, item9, item10]
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                completion(nil, error)
+                return
+            }
+            
+            guard let data = data else {
+                completion(nil, NSError(domain: "No data received", code: 0, userInfo: nil))
+                return
+            }
+            
+            do {
+                let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                if let menuArray = json?["menu"] as? [[String: Any]] {
+                    var menuItems: [MenuItem] = []
+                    for itemDict in menuArray {
+                        if let title = itemDict["name"] as? String,
+                           let calories = itemDict["calories"] as? Int,
+                           let nutritionData = itemDict["extraNutritionFacts"] as? [String: String],
+                           let ingredients = itemDict["ingredients"] as? String {
+                            
+                            let menuItem = MenuItem(title: title,
+                                                    calories: calories,
+                                                    icons: [],
+                                                    rating: 0,
+                                                    nutritionData: nutritionData,
+                                                    ingredients: ingredients)
+                            menuItems.append(menuItem)
+                        }
+                    }
+                    completion(menuItems, nil)
+                } else {
+                    completion(nil, NSError(domain: "Invalid JSON format", code: 0, userInfo: nil))
+                }
+            } catch {
+                completion(nil, error)
+            }
+        }
+        
+        task.resume()
     }
 }
+
 
 

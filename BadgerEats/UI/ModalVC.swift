@@ -11,10 +11,11 @@ class ModalViewController: UIViewController {
     var onClose: (() -> Void)?
     
     var titleText: String
-    var nutrFactsList: [String: CGFloat]
-    var ingredientsList: [String]
+    var nutrFactsList: [String: String]
+    var ingredientsList: String
         
-    init(title: String, nutrFacts: [String: CGFloat], ingredients: [String]) {
+    init(title: String, nutrFacts: [String: String], ingredients: String) {
+        print(nutrFacts)
         self.titleText = title
         self.nutrFactsList = nutrFacts
         self.ingredientsList = ingredients
@@ -37,15 +38,9 @@ class ModalViewController: UIViewController {
         
         return nutrFactsString
     }
-    
-    func getIngredients() -> String {
-        return ingredientsList.joined(separator: ",")
-    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        
 
         // Configure the modal pane
         let modalPane = UIView()
@@ -64,7 +59,7 @@ class ModalViewController: UIViewController {
 
         // Add "Modal Content" label
         let modalLabel = UILabel()
-        modalLabel.text = titleText
+        modalLabel.text = titleText.count > 20 ? "\(titleText.prefix(27))..." : titleText
         modalLabel.font = UIFont.boldSystemFont(ofSize: 18)
         modalPane.addSubview(modalLabel)
         
@@ -77,12 +72,17 @@ class ModalViewController: UIViewController {
         let closeButton = UIButton(type: .system)
         closeButton.setTitle("Close", for: .normal)
         closeButton.addTarget(self, action: #selector(closeModal), for: .touchUpInside)
+        // Configure the button
+        var config = UIButton.Configuration.plain()
+        config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+        closeButton.configuration = config
         modalPane.addSubview(closeButton)
         
         // Position the "Close" button
         closeButton.translatesAutoresizingMaskIntoConstraints = false
         closeButton.trailingAnchor.constraint(equalTo: modalPane.trailingAnchor, constant: -10).isActive = true
         closeButton.topAnchor.constraint(equalTo: modalPane.topAnchor, constant: 10).isActive = true
+        closeButton.titleLabel?.topAnchor.constraint(equalTo: modalPane.topAnchor, constant: 10).isActive = true
         
         // Add Nutrition Facts label
         let nutrLabel = UILabel()
@@ -119,27 +119,39 @@ class ModalViewController: UIViewController {
         ingredientsLabel.leadingAnchor.constraint(equalTo: modalPane.leadingAnchor, constant: 10).isActive = true
         ingredientsLabel.topAnchor.constraint(equalTo: nutrFacts.bottomAnchor, constant: 20).isActive = true
         
-        // Add Ingredients content
+        // Add Ingredients content within a scroll view
+        let scrollView = UIScrollView()
+        modalPane.addSubview(scrollView)
+        
+        // Scroll view constraints
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.leadingAnchor.constraint(equalTo: modalPane.leadingAnchor, constant: 10).isActive = true
+        scrollView.trailingAnchor.constraint(equalTo: modalPane.trailingAnchor, constant: -5).isActive = true
+        scrollView.topAnchor.constraint(equalTo: ingredientsLabel.bottomAnchor, constant: 5).isActive = true
+        scrollView.bottomAnchor.constraint(equalTo: modalPane.bottomAnchor, constant: -10).isActive = true
+        
         let ingredientsContent = UILabel()
-        ingredientsContent.text = getIngredients()
+        ingredientsContent.text = ingredientsList
         ingredientsContent.numberOfLines = 0
         ingredientsContent.font = UIFont.systemFont(ofSize: 12)
-        modalPane.addSubview(ingredientsContent)
+        scrollView.addSubview(ingredientsContent)
         
-        // Position Nutrition Facts content
         ingredientsContent.translatesAutoresizingMaskIntoConstraints = false
-        ingredientsContent.leadingAnchor.constraint(equalTo: modalPane.leadingAnchor, constant: 10).isActive = true
-        ingredientsContent.trailingAnchor.constraint(equalTo: modalPane.trailingAnchor, constant: -10).isActive = true
-        ingredientsContent.topAnchor.constraint(equalTo: ingredientsLabel.bottomAnchor, constant: 5).isActive = true
-        
+        ingredientsContent.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor).isActive = true
+        ingredientsContent.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor).isActive = true
+        ingredientsContent.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
+        ingredientsContent.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
+        ingredientsContent.widthAnchor.constraint(equalTo: scrollView.widthAnchor, constant: -10).isActive = true
+
         // Add tap gesture recognizer to the background view
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(closeModal))
-        view.addGestureRecognizer(tapGesture)
+//        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(closeModal))
+//        view.addGestureRecognizer(tapGesture)
     }
 
     @objc func closeModal() {
         onClose?()
     }
 }
+
 
 
