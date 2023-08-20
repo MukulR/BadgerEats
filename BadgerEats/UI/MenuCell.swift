@@ -15,7 +15,7 @@ class MenuCell: UITableViewCell {
     var nutritionData: [String: CGFloat] = [:]
     var ingredients: String = ""
     
-    var iconDict: [String: String] = ["Vegan": "leaf.fill", "Gluten-Free": "g.circle.fill"]
+    var iconDict: [String: String] = ["Vegan": "leaf.fill", "Gluten-Free": "g.circle.fill", "Halal": "h.circle", "Vegetarian": "v.circle"]
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -38,7 +38,7 @@ class MenuCell: UITableViewCell {
             subview.removeFromSuperview()
         }
         
-        for icon in menuItem.icons {
+        for icon in menuItem.contains {
             if let sysName = iconDict[icon] {
                 let img = UIImage(systemName: sysName)
                 

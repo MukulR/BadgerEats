@@ -14,4 +14,5 @@ struct MenuItem {
     var rating: CGFloat
     var nutritionData: [String: String]
     var ingredients: String
+    var contains: [String]
 }

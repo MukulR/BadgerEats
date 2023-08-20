@@ -13,12 +13,14 @@ class ModalViewController: UIViewController {
     var titleText: String
     var nutrFactsList: [String: String]
     var ingredientsList: String
+    var containsList: [String]
         
-    init(title: String, nutrFacts: [String: String], ingredients: String) {
+    init(title: String, nutrFacts: [String: String], ingredients: String, contains: [String]) {
         print(nutrFacts)
         self.titleText = title
         self.nutrFactsList = nutrFacts
         self.ingredientsList = ingredients
+        self.containsList = contains
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -29,7 +31,7 @@ class ModalViewController: UIViewController {
     func getNutrFacts() -> String {
         var nutrFactsString = ""
 
-        for (key, value) in nutrFactsList {
+        for (key, value) in self.nutrFactsList {
             if !nutrFactsString.isEmpty {
                 nutrFactsString += ", "
             }
@@ -37,6 +39,17 @@ class ModalViewController: UIViewController {
         }
         
         return nutrFactsString
+    }
+    
+    func getContains() -> String {
+        var containsString = ""
+        for item in self.containsList {
+            if item != "Vegetarian" && item != "Halal" && item != "Vegan" {
+                containsString += item + ", "
+            }
+        }
+        containsString = String(containsString.dropLast(2)) // Remove the last ", "
+        return containsString
     }
 
     override func viewDidLoad() {
@@ -55,7 +68,7 @@ class ModalViewController: UIViewController {
         modalPane.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         modalPane.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
         modalPane.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -40).isActive = true
-        modalPane.heightAnchor.constraint(equalTo: modalPane.widthAnchor).isActive = true
+        modalPane.heightAnchor.constraint(equalTo: modalPane.widthAnchor, multiplier: 1.5, constant: 0).isActive = true
 
         // Add "Modal Content" label
         let modalLabel = UILabel()
@@ -84,6 +97,30 @@ class ModalViewController: UIViewController {
         closeButton.topAnchor.constraint(equalTo: modalPane.topAnchor, constant: 10).isActive = true
         closeButton.titleLabel?.topAnchor.constraint(equalTo: modalPane.topAnchor, constant: 10).isActive = true
         
+        // Add contains label
+        let containsLabel = UILabel()
+        containsLabel.text = "Allergens"
+        containsLabel.font = UIFont.boldSystemFont(ofSize: 15)
+        modalPane.addSubview(containsLabel)
+        
+        containsLabel.translatesAutoresizingMaskIntoConstraints = false
+        containsLabel.leadingAnchor.constraint(equalTo: modalPane.leadingAnchor, constant: 10).isActive = true
+        containsLabel.topAnchor.constraint(equalTo: modalLabel.bottomAnchor, constant: 20).isActive = true
+        
+        // Add contains label content
+        let containsContent = UILabel()
+        containsContent.text = getContains()
+        containsContent.numberOfLines = 0
+        containsContent.font = UIFont.systemFont(ofSize: 12)
+        modalPane.addSubview(containsContent)
+        
+        // Position Nutrition Facts content
+        containsContent.translatesAutoresizingMaskIntoConstraints = false
+        containsContent.leadingAnchor.constraint(equalTo: modalPane.leadingAnchor, constant: 10).isActive = true
+        containsContent.trailingAnchor.constraint(equalTo: modalPane.trailingAnchor, constant: -10).isActive = true
+        containsContent.topAnchor.constraint(equalTo: containsLabel.bottomAnchor, constant: 5).isActive = true
+        
+        
         // Add Nutrition Facts label
         let nutrLabel = UILabel()
         nutrLabel.text = "Nutrition Facts"
@@ -93,7 +130,7 @@ class ModalViewController: UIViewController {
         // Position Nutrition Facts Label
         nutrLabel.translatesAutoresizingMaskIntoConstraints = false
         nutrLabel.leadingAnchor.constraint(equalTo: modalPane.leadingAnchor, constant: 10).isActive = true
-        nutrLabel.topAnchor.constraint(equalTo: modalLabel.bottomAnchor, constant: 20).isActive = true
+        nutrLabel.topAnchor.constraint(equalTo: containsContent.bottomAnchor, constant: 20).isActive = true
         
         // Add Nutrition Facts content
         let nutrFacts = UILabel()
@@ -144,8 +181,8 @@ class ModalViewController: UIViewController {
         ingredientsContent.widthAnchor.constraint(equalTo: scrollView.widthAnchor, constant: -10).isActive = true
 
         // Add tap gesture recognizer to the background view
-//        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(closeModal))
-//        view.addGestureRecognizer(tapGesture)
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(closeModal))
+        view.addGestureRecognizer(tapGesture)
     }
 
     @objc func closeModal() {

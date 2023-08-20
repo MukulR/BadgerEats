@@ -13,6 +13,27 @@ class HomeVC: UIViewController {
     var selectHallButton = UIButton()
     var selectMealButton = UIButton()
     
+    var selectedHall: String = "" {
+        didSet {
+            if selectedHall != oldValue {
+                print("Selected Hall changed: \(selectedHall)")
+                // Call the method to load data based on the new selectedHall
+                loadData()
+            }
+        }
+    }
+
+    var selectedMeal: String = "" {
+        didSet {
+            if selectedMeal != oldValue {
+                print("Selected Meal changed: \(selectedMeal)")
+                // Call the method to load data based on the new selectedMeal
+                loadData()
+            }
+        }
+    }
+
+    
     var refreshContainer = UIRefreshControl()
     var tableView = UITableView()
     var menuItems: [MenuItem] = []
@@ -22,35 +43,45 @@ class HomeVC: UIViewController {
     
     var latest: UIView? = nil
     
+    func loadData() {
+        if (self.selectedHall != "" && self.selectedMeal != "") {
+            print("Start")
+            
+            let hallSlugs = ["Rheta's Market": "rhetas", "Gordon's Market": "gordons", "Liz's Market": "lizs", "Four Lakes Market": "fourlakes"]
+            
+            let market = hallSlugs[self.selectedHall] ?? ""
+            let meal = self.selectedMeal.lowercased()
+            
+            if (market != "" && meal != "") {
+                
+                fetchData(market: market, meal: meal) { menuItems, error in
+                    if let error = error {
+                        print("Error fetching data: \(error)")
+                    } else if let menuItems = menuItems {
+                        self.menuItems = menuItems
+                        DispatchQueue.main.async {
+                            print("Reloading")
+                            self.tableView.reloadData()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    
     @objc func refreshData(send: UIRefreshControl) {
         print("Refreshed")
     }
+    
    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
         
-        // Call the fetchData function
-        fetchData { menuItems, error in
-            if let error = error {
-                print("Error fetching data: \(error)")
-            } else if let menuItems = menuItems {
-                // Store the fetched menu items in a variable or update your UI
-                print("Yes")
-                self.menuItems = menuItems
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
-                }
-
-                // Call any method that updates your UI with the fetched data
-//                self.updateUI(with: menuItems)
-            }
-        }
-        
         refreshContainer.addTarget(self, action: #selector(refreshData), for: .valueChanged)
         latest = configureHeaderStack()
-        latest = configureSelect(button: selectHallButton, name: "Select Hall", options: ["Rheta's Market", "Gordon's Market", "Liz's Market"], padding: 20)
-        latest = configureSelect(button: selectMealButton, name: "Select Meal", options: ["Breakfast", "Lunch", "Dinner"], padding: 5.0)
+        latest = configureSelects()
         latest = configureTableView()
     }
     
@@ -81,35 +112,77 @@ class HomeVC: UIViewController {
         return headerStack
     }
     
-    func configureSelect(button: UIButton, name: String, options: Array<String>, padding: CGFloat) -> UIButton {
-        view.addSubview(button)
+    
+    func handleSelection(hall: String, meal: String) {
+        if (hall != "") {
+            self.selectedHall = hall
+        }
         
-        var actions = [UIAction]()
+        if (meal != "") {
+            self.selectedMeal = meal
+        }
+    }
+    
+    func configureSelects() -> UIButton {
+        view.addSubview(selectHallButton)
         
-        for opt in options {
-            actions.append(UIAction(title: opt, handler: { _ in
-                button.setTitle(opt, for: .normal)
+        var hallActions = [UIAction]()
+        let hallOptions = ["Four Lakes Market", "Gordon's Market", "Liz's Market", "Rheta's Market"]
+        
+        for opt in hallOptions {
+            hallActions.append(UIAction(title: opt, handler: { _ in
+                self.selectHallButton.setTitle(opt, for: .normal)
+                self.handleSelection(hall: opt, meal: "");
             }))
         }
         
-        let hallSelect = UIMenu(children: actions)
+        let hallSelect = UIMenu(children: hallActions)
 
-        button.menu = hallSelect
-        button.showsMenuAsPrimaryAction = true
-        button.setTitle(name, for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = .tintColor
-        button.layer.cornerRadius = 8.0
-        button.translatesAutoresizingMaskIntoConstraints = false
+        selectHallButton.menu = hallSelect
+        selectHallButton.showsMenuAsPrimaryAction = true
+        selectHallButton.setTitle("Select Hall", for: .normal)
+        selectHallButton.setTitleColor(.white, for: .normal)
+        selectHallButton.backgroundColor = .tintColor
+        selectHallButton.layer.cornerRadius = 8.0
+        selectHallButton.translatesAutoresizingMaskIntoConstraints = false
         
         if let latestUnwrapped = latest {
-            button.topAnchor.constraint(equalTo: latestUnwrapped.bottomAnchor, constant: padding).isActive = true
-            button.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20).isActive = true
-            button.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20).isActive = true
+            selectHallButton.topAnchor.constraint(equalTo: latestUnwrapped.bottomAnchor, constant: 20).isActive = true
+            selectHallButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20).isActive = true
+            selectHallButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20).isActive = true
         }
         
-        return button
+
+        // Repeat the process for selectMealButton
+        view.addSubview(selectMealButton)
+        
+        var mealActions = [UIAction]()
+        let mealOptions = ["Breakfast", "Lunch", "Dinner"]
+        
+        for opt in mealOptions {
+            mealActions.append(UIAction(title: opt, handler: { _ in
+                self.selectMealButton.setTitle(opt, for: .normal)
+                self.handleSelection(hall: "", meal: opt);
+            }))
+        }
+        
+        let mealSelect = UIMenu(children: mealActions)
+
+        selectMealButton.menu = mealSelect
+        selectMealButton.showsMenuAsPrimaryAction = true
+        selectMealButton.setTitle("Select Meal", for: .normal)
+        selectMealButton.setTitleColor(.white, for: .normal)
+        selectMealButton.backgroundColor = .tintColor
+        selectMealButton.layer.cornerRadius = 8.0
+        selectMealButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        selectMealButton.topAnchor.constraint(equalTo: selectHallButton.bottomAnchor, constant: 5.0).isActive = true
+        selectMealButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20).isActive = true
+        selectMealButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20).isActive = true
+        
+        return selectMealButton
     }
+
     
     func configureTableView() -> UITableView {
         view.addSubview(tableView)
@@ -130,14 +203,14 @@ class HomeVC: UIViewController {
         return tableView
     }
     
-    @objc func showModal(title: String, nutrFacts: [String: String], ingredients: String) {
+    @objc func showModal(title: String, nutrFacts: [String: String], ingredients: String, contains: [String]) {
         let blurEffect = UIBlurEffect(style: .dark)
         blurEffectView = UIVisualEffectView(effect: blurEffect)
         blurEffectView?.frame = view.bounds
         blurEffectView?.alpha = 0.5
         view.addSubview(blurEffectView!)
 
-        modalViewController = ModalViewController(title: title, nutrFacts: nutrFacts, ingredients: ingredients)
+        modalViewController = ModalViewController(title: title, nutrFacts: nutrFacts, ingredients: ingredients, contains: contains)
         modalViewController?.modalPresentationStyle = .overFullScreen
         modalViewController?.modalTransitionStyle = .coverVertical
 
@@ -173,17 +246,29 @@ extension HomeVC: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let menuItem = menuItems[indexPath.row]
-        showModal(title: menuItem.title, nutrFacts: menuItem.nutritionData, ingredients: menuItem.ingredients)
+        showModal(title: menuItem.title, nutrFacts: menuItem.nutritionData, ingredients: menuItem.ingredients, contains: menuItem.contains)
     }
 }
 
 extension HomeVC {
     
-    func fetchData(completion: @escaping ([MenuItem]?, Error?) -> Void) {
-        guard let url = URL(string: "https://api.mukulrao.com/badgereats/getmenu/rheta/lunch/week") else {
+    func fetchData(market: String, meal: String, completion: @escaping ([MenuItem]?, Error?) -> Void) {
+        if (market == "") {
+            completion(nil, NSError(domain: "Invalid Market", code: 0, userInfo: nil))
+            return
+        }
+        
+        guard let urlComponents = URLComponents(string: "https://api.mukulrao.com/badgereats/getmenu/\(market)/\(meal)") else {
             completion(nil, NSError(domain: "Invalid URL", code: 0, userInfo: nil))
             return
         }
+        
+        guard let url = urlComponents.url else {
+           completion(nil, NSError(domain: "Invalid URL", code: 0, userInfo: nil))
+           return
+        }
+        
+        print(url)
         
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
@@ -204,14 +289,15 @@ extension HomeVC {
                         if let title = itemDict["name"] as? String,
                            let calories = itemDict["calories"] as? Int,
                            let nutritionData = itemDict["extraNutritionFacts"] as? [String: String],
-                           let ingredients = itemDict["ingredients"] as? String {
-                            
+                           let ingredients = itemDict["ingredients"] as? String,
+                            let foodContains = itemDict["contains"] as? [String] {
                             let menuItem = MenuItem(title: title,
                                                     calories: calories,
                                                     icons: [],
                                                     rating: 0,
                                                     nutritionData: nutritionData,
-                                                    ingredients: ingredients)
+                                                    ingredients: ingredients,
+                                                    contains: foodContains)
                             menuItems.append(menuItem)
                         }
                     }
