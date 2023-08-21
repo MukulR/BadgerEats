@@ -203,14 +203,14 @@ class HomeVC: UIViewController {
         return tableView
     }
     
-    @objc func showModal(title: String, nutrFacts: [String: String], ingredients: String, contains: [String]) {
+    @objc func showModal(foodID: Int, title: String, nutrFacts: [String: String], ingredients: String, contains: [String]) {
         let blurEffect = UIBlurEffect(style: .dark)
         blurEffectView = UIVisualEffectView(effect: blurEffect)
         blurEffectView?.frame = view.bounds
         blurEffectView?.alpha = 0.5
         view.addSubview(blurEffectView!)
 
-        modalViewController = ModalViewController(title: title, nutrFacts: nutrFacts, ingredients: ingredients, contains: contains)
+        modalViewController = ModalViewController(foodID: foodID, title: title, nutrFacts: nutrFacts, ingredients: ingredients, contains: contains)
         modalViewController?.modalPresentationStyle = .overFullScreen
         modalViewController?.modalTransitionStyle = .coverVertical
 
@@ -246,7 +246,7 @@ extension HomeVC: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let menuItem = menuItems[indexPath.row]
-        showModal(title: menuItem.title, nutrFacts: menuItem.nutritionData, ingredients: menuItem.ingredients, contains: menuItem.contains)
+        showModal(foodID: menuItem.foodID, title: menuItem.title, nutrFacts: menuItem.nutritionData, ingredients: menuItem.ingredients, contains: menuItem.contains)
     }
 }
 
@@ -290,8 +290,10 @@ extension HomeVC {
                            let calories = itemDict["calories"] as? Int,
                            let nutritionData = itemDict["extraNutritionFacts"] as? [String: String],
                            let ingredients = itemDict["ingredients"] as? String,
-                            let foodContains = itemDict["contains"] as? [String] {
-                            let menuItem = MenuItem(title: title,
+                            let foodContains = itemDict["contains"] as? [String],
+                            let foodID = itemDict["id"] as? Int {
+                            let menuItem = MenuItem(foodID: foodID,
+                                                    title: title,
                                                     calories: calories,
                                                     icons: [],
                                                     rating: 0,

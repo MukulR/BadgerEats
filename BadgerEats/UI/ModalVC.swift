@@ -10,13 +10,23 @@ class ModalViewController: UIViewController {
 
     var onClose: (() -> Void)?
     
+    var currentFoodID: Int
+    
     var titleText: String
     var nutrFactsList: [String: String]
     var ingredientsList: String
     var containsList: [String]
+    
+    var modalPane = UIView()
+    var ratingStepper = UIStepper()
+    var ratingBar = UIView()
+    var ratingLabel = UILabel()
+    var rectangleWidthConstraint = NSLayoutConstraint()
+    let baseMultiplier = 0.4
+    var barCornerRadius = 2.0
         
-    init(title: String, nutrFacts: [String: String], ingredients: String, contains: [String]) {
-        print(nutrFacts)
+    init(foodID: Int, title: String, nutrFacts: [String: String], ingredients: String, contains: [String]) {
+        self.currentFoodID = foodID
         self.titleText = title
         self.nutrFactsList = nutrFacts
         self.ingredientsList = ingredients
@@ -51,12 +61,20 @@ class ModalViewController: UIViewController {
         containsString = String(containsString.dropLast(2)) // Remove the last ", "
         return containsString
     }
+    
+    @objc func stepperValueChanged() {
+        let stepperValue = ratingStepper.value
+        let widthMultiplier = (baseMultiplier / ratingStepper.maximumValue) * stepperValue
+        rectangleWidthConstraint.isActive = false
+        rectangleWidthConstraint = ratingBar.widthAnchor.constraint(equalTo: modalPane.widthAnchor, multiplier: widthMultiplier)
+        rectangleWidthConstraint.isActive = true
+        ratingLabel.text = "\(Int(ratingStepper.value))/5"
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Configure the modal pane
-        let modalPane = UIView()
         modalPane.backgroundColor = .white
         modalPane.layer.cornerRadius = 10.0
         modalPane.layer.borderWidth = 1.0  // Add border width
@@ -97,15 +115,75 @@ class ModalViewController: UIViewController {
         closeButton.topAnchor.constraint(equalTo: modalPane.topAnchor, constant: 10).isActive = true
         closeButton.titleLabel?.topAnchor.constraint(equalTo: modalPane.topAnchor, constant: 10).isActive = true
         
+        // Add rating label
+        let rateLabel = UILabel()
+        rateLabel.text = "Rate This Product"
+        rateLabel.font = UIFont.boldSystemFont(ofSize: 15)
+        modalPane.addSubview(rateLabel)
+        
+        rateLabel.translatesAutoresizingMaskIntoConstraints = false
+        rateLabel.leadingAnchor.constraint(equalTo: modalPane.leadingAnchor, constant: 10).isActive = true
+        rateLabel.topAnchor.constraint(equalTo: modalLabel.bottomAnchor, constant: 20).isActive = true
+        
+        // Add rate stepper
+        ratingStepper.minimumValue = 0
+        ratingStepper.maximumValue = 5
+        ratingStepper.stepValue = 1
+        ratingStepper.value = 5
+        ratingStepper.transform = CGAffineTransform(scaleX: 0.75, y: 0.75)
+        ratingStepper.addTarget(self, action: #selector(stepperValueChanged), for: .valueChanged)
+        modalPane.addSubview(ratingStepper)
+        
+        ratingStepper.translatesAutoresizingMaskIntoConstraints = false
+        ratingStepper.leadingAnchor.constraint(equalTo: modalPane.leadingAnchor, constant: 0).isActive = true
+        ratingStepper.topAnchor.constraint(equalTo: rateLabel.bottomAnchor, constant: 5).isActive = true
+        
+        // Add rating label
+        ratingLabel.text = "5/5"
+        ratingLabel.font = UIFont.systemFont(ofSize: 12)
+        modalPane.addSubview(ratingLabel)
+        
+        // Constrain rating label
+        ratingLabel.translatesAutoresizingMaskIntoConstraints = false
+        ratingLabel.leadingAnchor.constraint(equalTo: ratingStepper.trailingAnchor, constant: -5).isActive = true
+        ratingLabel.centerYAnchor.constraint(equalTo: ratingStepper.centerYAnchor).isActive = true
+        
+        
+        // Add a rectangle view background
+        let ratingBackgroundBar = UIView()
+        ratingBackgroundBar.backgroundColor = .systemGray
+        ratingBackgroundBar.layer.cornerRadius = barCornerRadius
+        modalPane.addSubview(ratingBackgroundBar)
+        
+        // Position the rectangle background view
+        ratingBackgroundBar.translatesAutoresizingMaskIntoConstraints = false
+        ratingBackgroundBar.leadingAnchor.constraint(equalTo: ratingLabel.trailingAnchor, constant: 3).isActive = true
+        ratingBackgroundBar.centerYAnchor.constraint(equalTo: ratingStepper.centerYAnchor, constant: 0).isActive = true
+        ratingBackgroundBar.heightAnchor.constraint(equalToConstant: 5).isActive = true
+        ratingBackgroundBar.widthAnchor.constraint(equalTo: modalPane.widthAnchor, multiplier: baseMultiplier, constant: 0).isActive = true
+        
+        // Add main rectangle view
+        ratingBar.backgroundColor = .tintColor
+        ratingBar.layer.cornerRadius = barCornerRadius
+        modalPane.addSubview(ratingBar)
+        
+        // Position the rectangle view
+        ratingBar.translatesAutoresizingMaskIntoConstraints = false
+        ratingBar.leadingAnchor.constraint(equalTo: ratingLabel.trailingAnchor, constant: 3).isActive = true
+        ratingBar.centerYAnchor.constraint(equalTo: ratingStepper.centerYAnchor, constant: 0).isActive = true
+        ratingBar.heightAnchor.constraint(equalToConstant: 5).isActive = true
+        rectangleWidthConstraint = ratingBar.widthAnchor.constraint(equalTo: modalPane.widthAnchor, multiplier: baseMultiplier, constant: 0)
+        rectangleWidthConstraint.isActive = true
+        
         // Add contains label
         let containsLabel = UILabel()
-        containsLabel.text = "Allergens"
+        containsLabel.text = "Allergen Information"
         containsLabel.font = UIFont.boldSystemFont(ofSize: 15)
         modalPane.addSubview(containsLabel)
         
         containsLabel.translatesAutoresizingMaskIntoConstraints = false
         containsLabel.leadingAnchor.constraint(equalTo: modalPane.leadingAnchor, constant: 10).isActive = true
-        containsLabel.topAnchor.constraint(equalTo: modalLabel.bottomAnchor, constant: 20).isActive = true
+        containsLabel.topAnchor.constraint(equalTo: ratingStepper.bottomAnchor, constant: 20).isActive = true
         
         // Add contains label content
         let containsContent = UILabel()

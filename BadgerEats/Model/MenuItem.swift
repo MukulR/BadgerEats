@@ -8,6 +8,7 @@
 import UIKit
 
 struct MenuItem {
+    var foodID: Int
     var title: String
     var calories: Int
     var icons: [String]
