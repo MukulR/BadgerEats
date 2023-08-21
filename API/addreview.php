@@ -4,12 +4,26 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+
 $sname = "localhost";
 $uname = "root";
-$pwd = "timmy";
+$pwd = "";
 $dbname = "badgereats";
 $tablename = "reviews";
-$apikey = "68b71632-fb9e-451b-8f69-7a672d8ab6f7";
+$apikey = "";
+
+$jsonContent = file_get_contents('authorization.json');
+$jsonData = json_decode($jsonContent, true);
+
+if ($jsonData === null) {
+    echo "Error parsing Auth.";
+} else {
+    // Access the value using the key 'main'
+    $pwd = $jsonData['dbpwd'];
+    $apikey = $jsonData['api-key'];
+}
+
+
 
 $connection = mysqli_connect($sname, $uname, $pwd, $dbname);
 
