@@ -30,7 +30,9 @@ class MenuCell: UITableViewCell {
     }
     
     func set(menuItem: MenuItem) {
-        menuItemLabel.text = menuItem.title
+        menuItemLabel.text = menuItem.title.count > 27 ? "\(menuItem.title.prefix(27))..." : menuItem.title
+//        titleText.count > 27 ? "\(titleText.prefix(27))..." : titleText
+        
         menuCalorieLabel.text = String(menuItem.calories) + " Calories"
         
         for subview in icons.arrangedSubviews {

@@ -78,6 +78,7 @@ class HomeVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
+        print(UIDevice.current.identifierForVendor!.uuidString)
         
         refreshContainer.addTarget(self, action: #selector(refreshData), for: .valueChanged)
         latest = configureHeaderStack()
