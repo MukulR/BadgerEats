@@ -70,6 +70,47 @@ class ModalViewController: UIViewController {
         rectangleWidthConstraint.isActive = true
         ratingLabel.text = "\(Int(ratingStepper.value))/5"
     }
+    
+    func postRating() {
+        let urlString = "https://api.mukulrao.com/badgereats/addreview"
+        let apiKey = ProcessInfo.processInfo.environment["API-KEY"] ?? "ERR"
+        print(apiKey)
+        
+        let deviceID = UIDevice.current.identifierForVendor!.uuidString
+        let foodID = self.currentFoodID
+        let rating = self.ratingStepper.value
+        
+        // Prepare the JSON data
+        let json: [String: Any] = ["deviceID": deviceID, "foodID": foodID, "rating": rating]
+        let jsonData = try? JSONSerialization.data(withJSONObject: json)
+        
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(apiKey, forHTTPHeaderField: "API-KEY")
+        request.httpBody = jsonData
+        
+        let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+            if let error = error {
+                print("Error: \(error)")
+            } else if let data = data {
+                if let responseString = String(data: data, encoding: .utf8) {
+                    print("Response: \(responseString)")
+                }
+            }
+        }
+        
+        task.resume()
+    }
+    
+    @objc func submitFoodRating() {
+        postRating()
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -147,6 +188,7 @@ class ModalViewController: UIViewController {
         ratingLabel.translatesAutoresizingMaskIntoConstraints = false
         ratingLabel.leadingAnchor.constraint(equalTo: ratingStepper.trailingAnchor, constant: -5).isActive = true
         ratingLabel.centerYAnchor.constraint(equalTo: ratingStepper.centerYAnchor).isActive = true
+        ratingLabel.widthAnchor.constraint(equalToConstant: 25).isActive = true
         
         
         // Add a rectangle view background
@@ -174,6 +216,32 @@ class ModalViewController: UIViewController {
         ratingBar.heightAnchor.constraint(equalToConstant: 5).isActive = true
         rectangleWidthConstraint = ratingBar.widthAnchor.constraint(equalTo: modalPane.widthAnchor, multiplier: baseMultiplier, constant: 0)
         rectangleWidthConstraint.isActive = true
+        
+        // Add background for submit button
+        let background = UIView()
+        background.backgroundColor = .tintColor
+        background.layer.cornerRadius = 5.0
+        modalPane.addSubview(background)
+        
+        // Constraint button background
+        background.translatesAutoresizingMaskIntoConstraints = false
+        background.centerYAnchor.constraint(equalTo: ratingStepper.centerYAnchor).isActive = true
+        background.heightAnchor.constraint(equalTo: ratingStepper.heightAnchor, multiplier: 0.75).isActive = true
+        background.trailingAnchor.constraint(equalTo: modalPane.trailingAnchor, constant: -10).isActive = true
+        background.widthAnchor.constraint(equalTo: background.heightAnchor, multiplier: 3.0).isActive = true
+        
+        // Add submit rating button
+        let submitRating = UIButton(type: .system)
+        submitRating.setTitle("Submit", for: .normal)
+        submitRating.titleLabel?.font = UIFont.systemFont(ofSize: 12)
+        submitRating.setTitleColor(.white, for: .normal)
+        submitRating.addTarget(self, action: #selector(submitFoodRating), for: .touchUpInside)
+        background.addSubview(submitRating)
+        
+        // Constrain submit rating button
+        submitRating.translatesAutoresizingMaskIntoConstraints = false
+        submitRating.centerXAnchor.constraint(equalTo: background.centerXAnchor).isActive = true
+        submitRating.centerYAnchor.constraint(equalTo: background.centerYAnchor).isActive = true
         
         // Add contains label
         let containsLabel = UILabel()
