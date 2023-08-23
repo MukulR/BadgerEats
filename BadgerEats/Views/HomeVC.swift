@@ -45,8 +45,6 @@ class HomeVC: UIViewController {
     
     func loadData() {
         if (self.selectedHall != "" && self.selectedMeal != "") {
-            print("Start")
-            
             let hallSlugs = ["Rheta's Market": "rhetas", "Gordon's Market": "gordons", "Liz's Market": "lizs", "Four Lakes Market": "fourlakes"]
             
             let market = hallSlugs[self.selectedHall] ?? ""
@@ -267,8 +265,6 @@ extension HomeVC {
            completion(nil, NSError(domain: "Invalid URL", code: 0, userInfo: nil))
            return
         }
-        
-        print(url)
         
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {

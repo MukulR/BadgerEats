@@ -1,7 +1,7 @@
 <?php
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: *");
 error_reporting(E_ALL);
@@ -29,9 +29,8 @@ $connection = mysqli_connect($sname, $uname, $pwd, $dbname);
 
 if($connection) {
 	$data = json_decode(file_get_contents('php://input'), true);
-	$headers = apache_request_headers();
-	// echo(implode(" ", $headers));
-	if (strcmp(trim($headers["API-KEY"]), trim($apikey)) == 0) {
+	$headers = getallheaders();
+	if (strcmp(trim($headers["api-key"]), trim($apikey)) == 0) {
 		if (array_key_exists("deviceID", $data) && array_key_exists("foodID", $data) && array_key_exists("rating", $data)) {
 
 			$insertQuery = "INSERT INTO $tablename (`deviceID`, `foodID`, `rating`) VALUES (?, ?, ?)";

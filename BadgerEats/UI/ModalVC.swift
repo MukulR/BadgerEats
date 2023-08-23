@@ -24,6 +24,8 @@ class ModalViewController: UIViewController {
     var rectangleWidthConstraint = NSLayoutConstraint()
     let baseMultiplier = 0.4
     var barCornerRadius = 2.0
+    
+    var notificationViewController: NotificationViewController?
         
     init(foodID: Int, title: String, nutrFacts: [String: String], ingredients: String, contains: [String]) {
         self.currentFoodID = foodID
@@ -71,11 +73,23 @@ class ModalViewController: UIViewController {
         ratingLabel.text = "\(Int(ratingStepper.value))/5"
     }
     
+    func showNotification(titleContent: String, bodyContent: String) {
+        notificationViewController = NotificationViewController(title: titleContent, content: bodyContent)
+        notificationViewController?.modalPresentationStyle = .overFullScreen
+        notificationViewController?.modalTransitionStyle = .crossDissolve
+
+        // Present the modal using a completion block to handle dismissal
+        present(notificationViewController!, animated: true) { [weak self] in
+            self?.notificationViewController?.onClose = {
+                self?.notificationViewController?.dismiss(animated: true, completion: nil)
+            }
+        }
+    }
+    
     func postRating() {
-        let urlString = "https://api.mukulrao.com/badgereats/addreview"
+        let urlString = "https://api.mukulrao.com/badgereats/addreview.php"
         let apiKey = ProcessInfo.processInfo.environment["API-KEY"] ?? "ERR"
-        print(apiKey)
-        
+       
         let deviceID = UIDevice.current.identifierForVendor!.uuidString
         let foodID = self.currentFoodID
         let rating = self.ratingStepper.value
@@ -92,20 +106,40 @@ class ModalViewController: UIViewController {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue("Test", forHTTPHeaderField: "Test")
         request.setValue(apiKey, forHTTPHeaderField: "API-KEY")
+
         request.httpBody = jsonData
-        
         let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
             if let error = error {
                 print("Error: \(error)")
-            } else if let data = data {
-                if let responseString = String(data: data, encoding: .utf8) {
-                    print("Response: \(responseString)")
+                DispatchQueue.main.async {
+                    self.showNotification(titleContent: "Error", bodyContent: "An error occured while saving your rating.")
+                }
+            } else if let response = response as? HTTPURLResponse {
+                let statusCode = response.statusCode
+                if let data = data {
+                    do {
+                        if let responseJSON = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                            if (responseJSON["status"] as! String == "success" && statusCode == 200) {
+                                print("Successful rating")
+                                let formattedFoodTitle = self.titleText.count > 20 ? "\(self.titleText.prefix(20))..." : self.titleText
+                                DispatchQueue.main.async {
+                                    self.showNotification(titleContent: "Saved Rating!", bodyContent: "You gave '\(formattedFoodTitle)' a rating of \(Int(self.ratingStepper.value))/5!")
+                                }
+                            }
+                        } else {
+                            print("Failed to parse JSON response.")
+                        }
+                    } catch {
+                        print("Error parsing response JSON: \(error)")
+                    }
                 }
             }
         }
-        
+
         task.resume()
+
     }
     
     @objc func submitFoodRating() {
