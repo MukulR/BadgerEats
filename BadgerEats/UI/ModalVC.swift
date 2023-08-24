@@ -75,9 +75,10 @@ class ModalViewController: UIViewController {
     
     func showNotification(titleContent: String, bodyContent: String) {
         notificationViewController = NotificationViewController(title: titleContent, content: bodyContent)
+        notificationViewController?.view.isUserInteractionEnabled = false
         notificationViewController?.modalPresentationStyle = .overFullScreen
         notificationViewController?.modalTransitionStyle = .crossDissolve
-
+        
         // Present the modal using a completion block to handle dismissal
         present(notificationViewController!, animated: true) { [weak self] in
             self?.notificationViewController?.onClose = {
@@ -227,7 +228,7 @@ class ModalViewController: UIViewController {
         
         // Add a rectangle view background
         let ratingBackgroundBar = UIView()
-        ratingBackgroundBar.backgroundColor = .systemGray
+        ratingBackgroundBar.backgroundColor = .lightGray
         ratingBackgroundBar.layer.cornerRadius = barCornerRadius
         modalPane.addSubview(ratingBackgroundBar)
         

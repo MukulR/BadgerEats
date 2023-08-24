@@ -43,7 +43,7 @@ class NotificationViewController: UIViewController {
     
     func configure() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(closeModal))
-        view.addGestureRecognizer(tapGesture)
+            notificationPane.addGestureRecognizer(tapGesture)
         
         // Configure the notification pane
         notificationPane.backgroundColor = .white

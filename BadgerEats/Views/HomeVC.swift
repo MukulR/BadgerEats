@@ -251,7 +251,7 @@ extension HomeVC: UITableViewDelegate, UITableViewDataSource {
 extension HomeVC {
     
     func fetchData(market: String, meal: String, completion: @escaping ([MenuItem]?, Error?) -> Void) {
-        if (market == "") {
+        if market.isEmpty {
             completion(nil, NSError(domain: "Invalid Market", code: 0, userInfo: nil))
             return
         }
@@ -266,51 +266,87 @@ extension HomeVC {
            return
         }
         
-        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+        // Fetch ratings data from the second API endpoint
+        let ratingsURL = URL(string: "https://api.mukulrao.com/badgereats/getratings")!
+        
+        let ratingTask = URLSession.shared.dataTask(with: ratingsURL) { ratingData, _, error in
             if let error = error {
                 completion(nil, error)
                 return
             }
             
-            guard let data = data else {
+            guard let ratingData = ratingData else {
                 completion(nil, NSError(domain: "No data received", code: 0, userInfo: nil))
                 return
             }
             
             do {
-                let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-                if let menuArray = json?["menu"] as? [[String: Any]] {
-                    var menuItems: [MenuItem] = []
-                    for itemDict in menuArray {
-                        if let title = itemDict["name"] as? String,
-                           let calories = itemDict["calories"] as? Int,
-                           let nutritionData = itemDict["extraNutritionFacts"] as? [String: String],
-                           let ingredients = itemDict["ingredients"] as? String,
-                            let foodContains = itemDict["contains"] as? [String],
-                            let foodID = itemDict["id"] as? Int {
-                            let menuItem = MenuItem(foodID: foodID,
-                                                    title: title,
-                                                    calories: calories,
-                                                    icons: [],
-                                                    rating: 0,
-                                                    nutritionData: nutritionData,
-                                                    ingredients: ingredients,
-                                                    contains: foodContains)
-                            menuItems.append(menuItem)
+                let ratingJson = try JSONSerialization.jsonObject(with: ratingData, options: []) as? [String: [String: String]]
+                var ratings: [Int: CGFloat] = [:]
+                if let ratingsDict = ratingJson?["ratings"] {
+                    for (foodIDString, ratingValueString) in ratingsDict {
+                        if let foodID = Int(foodIDString), let ratingValue = Float(ratingValueString) {
+                            ratings[foodID] = CGFloat(ratingValue)
                         }
                     }
-                    completion(menuItems, nil)
-                } else {
-                    completion(nil, NSError(domain: "Invalid JSON format", code: 0, userInfo: nil))
                 }
+                
+                // Fetch menu data
+                let task = URLSession.shared.dataTask(with: url) { data, _, error in
+                    if let error = error {
+                        completion(nil, error)
+                        return
+                    }
+                    
+                    guard let data = data else {
+                        completion(nil, NSError(domain: "No data received", code: 0, userInfo: nil))
+                        return
+                    }
+                    
+                    do {
+                        let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                        if let menuArray = json?["menu"] as? [[String: Any]] {
+                            var menuItems: [MenuItem] = []
+                            for itemDict in menuArray {
+                                if let title = itemDict["name"] as? String,
+                                   let calories = itemDict["calories"] as? Int,
+                                   let nutritionData = itemDict["extraNutritionFacts"] as? [String: String],
+                                   let ingredients = itemDict["ingredients"] as? String,
+                                   let foodContains = itemDict["contains"] as? [String],
+                                   let foodID = itemDict["id"] as? Int {
+                                    
+                                    let ratingValue = ratings[foodID] ?? -1.0
+                                    
+                                    let menuItem = MenuItem(foodID: foodID,
+                                                            title: title,
+                                                            calories: calories,
+                                                            icons: [],
+                                                            rating: ratingValue,
+                                                            nutritionData: nutritionData,
+                                                            ingredients: ingredients,
+                                                            contains: foodContains)
+                                    menuItems.append(menuItem)
+                                }
+                            }
+                            completion(menuItems, nil)
+                        } else {
+                            completion(nil, NSError(domain: "Invalid JSON format", code: 0, userInfo: nil))
+                        }
+                    } catch {
+                        completion(nil, error)
+                    }
+                }
+                
+                task.resume()
             } catch {
                 completion(nil, error)
             }
         }
         
-        task.resume()
+        ratingTask.resume()
     }
 }
+
 
 
 
