@@ -70,12 +70,16 @@ class HomeVC: UIViewController {
     
     @objc func refreshData(send: UIRefreshControl) {
         print("Refreshed")
+        
+        loadData()
+        send.endRefreshing()
     }
     
    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
+        tableView.addSubview(refreshContainer)
                 
         refreshContainer.addTarget(self, action: #selector(refreshData), for: .valueChanged)
         latest = configureHeaderStack()
