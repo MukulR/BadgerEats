@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import MarqueeLabel
 
 class ReviewsVC: UIViewController {
     
@@ -21,15 +22,33 @@ class ReviewsVC: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
         
+       
+//        // Create a MarqueeLabel instance
+//        let marqueeLabel = MarqueeLabel(frame: CGRect(x: 20, y: 100, width: 200, height: 30), duration: 8, fadeLength: 10)
+//        view.addSubview(marqueeLabel)
+//
+//        marqueeLabel.translatesAutoresizingMaskIntoConstraints = false
+//        marqueeLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+//        marqueeLabel.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
+//        marqueeLabel.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor).isActive = true
+//
+//        // Customize the label's properties
+//        marqueeLabel.text = "This is a scrolling marquee label! This is a scrolling marquee label! This is a scrolling marquee label! This is a scrolling marquee label! This is a scrolling marquee label!"
+//        marqueeLabel.font = UIFont.systemFont(ofSize: 16)
+//        view.backgroundColor = .white
+        
+        // Add the MarqueeLabel to your view
+        
+        view.backgroundColor = .white
+
         tableView.addSubview(refreshContainer)
         refreshContainer.addTarget(self, action: #selector(refreshData), for: .valueChanged)
-        
+
         // Set the title for the navigation bar
         latest = configureHeaderStack()
         latest = configureTableView()
-        
+
         loadReviews()
     }
     
@@ -116,6 +135,21 @@ extension ReviewsVC: UITableViewDelegate, UITableViewDataSource {
         
         return cell
     }
+    
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        // Loop through visible cells and stop label scrolling
+        for case let cell as ReviewCell in tableView.visibleCells {
+            cell.menuItemLabel.labelize = true
+        }
+    }
+        
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        // Loop through visible cells and start label scrolling
+        for case let cell as ReviewCell in tableView.visibleCells {
+            cell.menuItemLabel.labelize = false
+        }
+    }
+    
 }
 
 extension ReviewsVC {

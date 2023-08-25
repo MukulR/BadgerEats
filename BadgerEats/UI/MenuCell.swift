@@ -6,10 +6,11 @@
 //
 
 import UIKit
+import MarqueeLabel
 
 class MenuCell: UITableViewCell {
     
-    var menuItemLabel = UILabel()
+    var menuItemLabel = MarqueeLabel()
     var ratingBar = UIView()
     var menuCalorieLabel = UILabel()
     var ratingLabel = UILabel()
@@ -17,6 +18,8 @@ class MenuCell: UITableViewCell {
     var nutritionData: [String: CGFloat] = [:]
     var ingredients: String = ""
     var rectangleWidthConstraint = NSLayoutConstraint()
+    
+    var menuItemLabelTrailingConstraint = NSLayoutConstraint()
     
     let LEFT_OFFEST = 20.0
     
@@ -29,6 +32,11 @@ class MenuCell: UITableViewCell {
         addSubview(ratingLabel)
         addSubview(icons)
         configure()
+        
+        menuItemLabel.type = .continuous
+        menuItemLabel.font = UIFont.boldSystemFont(ofSize: 15)
+        menuItemLabel.speed = .duration(20)
+        menuItemLabel.animationCurve = .linear
     }
     
     required init?(coder: NSCoder) {
@@ -36,7 +44,6 @@ class MenuCell: UITableViewCell {
     }
     
     func set(menuItem: MenuItem) {
-        menuItemLabel.text = menuItem.title.count > 27 ? "\(menuItem.title.prefix(27))..." : menuItem.title
         menuCalorieLabel.text = String(menuItem.calories) + " Calories"
         
         if menuItem.rating != -1.0 {
@@ -67,12 +74,31 @@ class MenuCell: UITableViewCell {
             }
         }
         
+        var totalWidth: CGFloat = 0.0
+
+        for subview in icons.arrangedSubviews {
+            totalWidth += subview.intrinsicContentSize.width
+        }
+
+        // Add the spacing between subviews
+        totalWidth += CGFloat(icons.arrangedSubviews.count - 1) * icons.spacing
+
+        // If you want to consider the content insets of the stack view
+        totalWidth += icons.layoutMargins.left + icons.layoutMargins.right
+        
+        
+        menuItemLabelTrailingConstraint.isActive = false
+        menuItemLabelTrailingConstraint = menuItemLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -totalWidth - LEFT_OFFEST)
+        menuItemLabelTrailingConstraint.isActive = true
+        menuItemLabel.text = menuItem.title
+        menuItemLabel.labelize = false
+        menuItemLabel.restartLabel()
+//
+        
     }
 
     
     func configure() {
-        menuItemLabel.numberOfLines = 0
-        menuItemLabel.adjustsFontSizeToFitWidth = true
         menuItemLabel.font = UIFont.boldSystemFont(ofSize: 15)
         
         menuCalorieLabel.numberOfLines = 0

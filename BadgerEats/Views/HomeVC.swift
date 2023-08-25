@@ -250,6 +250,20 @@ extension HomeVC: UITableViewDelegate, UITableViewDataSource {
         let menuItem = menuItems[indexPath.row]
         showModal(foodID: menuItem.foodID, title: menuItem.title, nutrFacts: menuItem.nutritionData, ingredients: menuItem.ingredients, contains: menuItem.contains)
     }
+    
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        // Loop through visible cells and stop label scrolling
+        for case let cell as MenuCell in tableView.visibleCells {
+            cell.menuItemLabel.labelize = true
+        }
+    }
+        
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        // Loop through visible cells and start label scrolling
+        for case let cell as MenuCell in tableView.visibleCells {
+            cell.menuItemLabel.labelize = false
+        }
+    }
 }
 
 extension HomeVC {

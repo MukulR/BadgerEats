@@ -6,10 +6,11 @@
 //
 
 import UIKit
+import MarqueeLabel
 
 class ReviewCell: UITableViewCell {
     
-    var menuItemLabel = UILabel()
+    var menuItemLabel = MarqueeLabel(frame: CGRect(x: 20, y: 100, width: 200, height: 30), duration: 8, fadeLength: 10)
     var ratingBarWidthConstraint = NSLayoutConstraint()
     var ratingLabelXConstraint = NSLayoutConstraint()
     var ratingBar = UIView()
@@ -21,6 +22,13 @@ class ReviewCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         configure()
         configureRatingBar()
+        
+        menuItemLabel.type = .continuous
+        menuItemLabel.font = UIFont.boldSystemFont(ofSize: 15)
+        menuItemLabel.speed = .duration(20)
+        menuItemLabel.animationCurve = .linear
+        menuItemLabel.fadeLength = 10.0
+        menuItemLabel.leadingBuffer = 14.0
     }
     
     required init?(coder: NSCoder) {
@@ -28,7 +36,11 @@ class ReviewCell: UITableViewCell {
     }
     
     func set(reviewItem: ReviewItem) {
+        print("Here")
         menuItemLabel.text = reviewItem.title
+        
+        menuItemLabel.labelize = false
+        menuItemLabel.restartLabel()
         
         let widthMultiplier = (0.75 / 5.0) * reviewItem.rating
         ratingBarWidthConstraint.isActive = false
@@ -43,13 +55,11 @@ class ReviewCell: UITableViewCell {
     
     func configure() {
         self.addSubview(menuItemLabel)
-        menuItemLabel.numberOfLines = 0
-        menuItemLabel.adjustsFontSizeToFitWidth = true
-        menuItemLabel.font = UIFont.boldSystemFont(ofSize: 15)
-        
+       
         menuItemLabel.translatesAutoresizingMaskIntoConstraints = false
         menuItemLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: 5).isActive = true
         menuItemLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: LEFT_OFFEST).isActive = true
+        menuItemLabel.widthAnchor.constraint(equalTo: self.widthAnchor, constant: -LEFT_OFFEST).isActive = true
     }
     
     func configureRatingBar() {
