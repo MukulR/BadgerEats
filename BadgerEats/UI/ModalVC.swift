@@ -88,7 +88,7 @@ class ModalViewController: UIViewController {
     }
     
     func postRating() {
-        let urlString = "https://api.mukulrao.com/badgereats/addreview.php"
+        let urlString = "https://api.mukulrao.com/badgereats/addreview"
         let apiKey = ProcessInfo.processInfo.environment["API-KEY"] ?? "ERR"
        
         let deviceID = UIDevice.current.identifierForVendor!.uuidString
@@ -96,7 +96,7 @@ class ModalViewController: UIViewController {
         let rating = self.ratingStepper.value
         
         // Prepare the JSON data
-        let json: [String: Any] = ["deviceID": deviceID, "foodID": foodID, "rating": rating]
+        let json: [String: Any] = ["deviceID": deviceID, "foodID": foodID, "foodName": self.titleText, "rating": rating]
         let jsonData = try? JSONSerialization.data(withJSONObject: json)
         
         guard let url = URL(string: urlString) else {

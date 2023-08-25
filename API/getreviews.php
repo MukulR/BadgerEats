@@ -27,7 +27,7 @@ function getData($deviceID) {
     $deviceID = mysqli_real_escape_string($connection, $deviceID);
     
     // Construct the SQL query
-    $query = "SELECT foodID, rating FROM reviews WHERE deviceID = '$deviceID'";
+    $query = "SELECT foodID, foodName, rating FROM reviews WHERE deviceID = '$deviceID' ORDER BY unixtime DESC";
     
     // Execute the query
     $result = mysqli_query($connection, $query);
@@ -39,9 +39,11 @@ function getData($deviceID) {
         // Fetch rows and create JSON array
         while ($row = mysqli_fetch_assoc($result)) {
             $foodID = $row['foodID'];
+            $foodName = $row['foodName'];
             $rating = $row['rating'];
-            $data[$foodID] = $rating;
-        }
+            
+            array_push($data, [$foodID, $foodName, $rating]);
+        }        
         
         // Free the result set
         mysqli_free_result($result);

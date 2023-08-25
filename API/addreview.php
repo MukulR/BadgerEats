@@ -31,12 +31,12 @@ if($connection) {
 	$data = json_decode(file_get_contents('php://input'), true);
 	$headers = getallheaders();
 	if (strcmp(trim($headers["api-key"]), trim($apikey)) == 0) {
-		if (array_key_exists("deviceID", $data) && array_key_exists("foodID", $data) && array_key_exists("rating", $data)) {
+		if (array_key_exists("deviceID", $data) && array_key_exists("foodID", $data) && array_key_exists("foodName", $data) && array_key_exists("rating", $data)) {
 
-			$insertQuery = "INSERT INTO $tablename (`deviceID`, `foodID`, `rating`) VALUES (?, ?, ?)";
+			$insertQuery = "INSERT INTO $tablename (`deviceID`, `foodID`, `foodName`, `rating`, `unixtime`) VALUES (?, ?, ?, ?, ?)";
 			$stmt = mysqli_prepare($connection, $insertQuery);
 			if ($stmt) {
-				mysqli_stmt_bind_param($stmt, "sii", $data['deviceID'], $data['foodID'], $data['rating']);
+				mysqli_stmt_bind_param($stmt, "sisii", $data['deviceID'], $data['foodID'], $data["foodName"], $data['rating'], time());
 				if (mysqli_stmt_execute($stmt)) {
 					header('Content-Type: application/json');
 					echo json_encode(array(

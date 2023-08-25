@@ -14,7 +14,7 @@ class ViewController: UITabBarController {
         
         // Instantiate view controllers for different views
         let home = HomeVC()
-        let settings = SettingsVC()
+        let settings = ReviewsVC()
         let credits = CreditsVC()
         
         // Wrap each view controller in a UINavigationController and set titles
