@@ -13,6 +13,8 @@ class HomeVC: UIViewController {
     var selectHallButton = UIButton()
     var selectMealButton = UIButton()
     
+    var myReviewsVCReference: ReviewsVC?
+    
     var selectedHall: String = "" {
         didSet {
             if selectedHall != oldValue {
@@ -191,6 +193,7 @@ class HomeVC: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.rowHeight = 100
+        tableView.showsVerticalScrollIndicator = false
         
         tableView.register(MenuCell.self, forCellReuseIdentifier: "MenuCell")
        
@@ -206,21 +209,29 @@ class HomeVC: UIViewController {
     }
     
     @objc func showModal(foodID: Int, title: String, nutrFacts: [String: String], ingredients: String, contains: [String]) {
-        let blurEffect = UIBlurEffect(style: .dark)
-        blurEffectView = UIVisualEffectView(effect: blurEffect)
-        blurEffectView?.frame = view.bounds
-        blurEffectView?.alpha = 0.5
-        view.addSubview(blurEffectView!)
+        if let reviewsVC = myReviewsVCReference {
+            
+            let blurEffect = UIBlurEffect(style: .dark)
+            blurEffectView = UIVisualEffectView(effect: blurEffect)
+            blurEffectView?.frame = view.bounds
+            blurEffectView?.alpha = 0.5
+            view.addSubview(blurEffectView!)
 
-        modalViewController = ModalViewController(foodID: foodID, title: title, nutrFacts: nutrFacts, ingredients: ingredients, contains: contains)
-        modalViewController?.modalPresentationStyle = .overFullScreen
-        modalViewController?.modalTransitionStyle = .coverVertical
+            
+            modalViewController = ModalViewController(foodID: foodID, title: title, nutrFacts: nutrFacts, ingredients: ingredients, contains: contains, reviewVC: reviewsVC)
+            modalViewController?.modalPresentationStyle = .overFullScreen
+            modalViewController?.modalTransitionStyle = .coverVertical
 
-        // Present the modal using a completion block to handle dismissal
-        present(modalViewController!, animated: true) { [weak self] in
-            self?.modalViewController?.onClose = {
-                self?.dismissModal()
+            // Present the modal using a completion block to handle dismissal
+            present(modalViewController!, animated: true) { [weak self] in
+                self?.modalViewController?.onClose = {
+                    self?.dismissModal()
+                }
             }
+        } else {
+            // Handle the case where myReviewsVCReference is nil
+            // For example, show an error or fallback behavior
+            print("myReviewsVCReference is nil, cannot present modal")
         }
     }
 

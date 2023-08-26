@@ -22,24 +22,7 @@ class ReviewsVC: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-       
-//        // Create a MarqueeLabel instance
-//        let marqueeLabel = MarqueeLabel(frame: CGRect(x: 20, y: 100, width: 200, height: 30), duration: 8, fadeLength: 10)
-//        view.addSubview(marqueeLabel)
-//
-//        marqueeLabel.translatesAutoresizingMaskIntoConstraints = false
-//        marqueeLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-//        marqueeLabel.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
-//        marqueeLabel.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor).isActive = true
-//
-//        // Customize the label's properties
-//        marqueeLabel.text = "This is a scrolling marquee label! This is a scrolling marquee label! This is a scrolling marquee label! This is a scrolling marquee label! This is a scrolling marquee label!"
-//        marqueeLabel.font = UIFont.systemFont(ofSize: 16)
-//        view.backgroundColor = .white
-        
-        // Add the MarqueeLabel to your view
-        
+
         view.backgroundColor = .white
 
         tableView.addSubview(refreshContainer)
