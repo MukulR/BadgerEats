@@ -5,12 +5,16 @@
 //  Created by Mukul Rao on 8/13/23.
 //
 import UIKit
+import MarqueeLabel
 
 class ModalViewController: UIViewController {
 
     var onClose: (() -> Void)?
     
     var currentFoodID: Int
+    var rateLabel = UILabel()
+    
+    var myReviewsVCReference: ReviewsVC?
     
     var titleText: String
     var nutrFactsList: [String: String]
@@ -27,12 +31,13 @@ class ModalViewController: UIViewController {
     
     var notificationViewController: NotificationViewController?
         
-    init(foodID: Int, title: String, nutrFacts: [String: String], ingredients: String, contains: [String]) {
+    init(foodID: Int, title: String, nutrFacts: [String: String], ingredients: String, contains: [String], reviewVC: ReviewsVC) {
         self.currentFoodID = foodID
         self.titleText = title
         self.nutrFactsList = nutrFacts
         self.ingredientsList = ingredients
         self.containsList = contains
+        self.myReviewsVCReference = reviewVC
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -60,7 +65,13 @@ class ModalViewController: UIViewController {
                 containsString += item + ", "
             }
         }
-        containsString = String(containsString.dropLast(2)) // Remove the last ", "
+        if containsString == "" {
+            containsString = "None"
+        } else {
+            // Remove the last ", "
+            containsString = String(containsString.dropLast(2))
+        }
+         
         return containsString
     }
     
@@ -93,7 +104,7 @@ class ModalViewController: UIViewController {
        
         let deviceID = UIDevice.current.identifierForVendor!.uuidString
         let foodID = self.currentFoodID
-        let rating = self.ratingStepper.value
+        let rating = Int(self.ratingStepper.value)
         
         // Prepare the JSON data
         let json: [String: Any] = ["deviceID": deviceID, "foodID": foodID, "foodName": self.titleText, "rating": rating]
@@ -124,10 +135,10 @@ class ModalViewController: UIViewController {
                         if let responseJSON = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                             if (responseJSON["status"] as! String == "success" && statusCode == 200) {
                                 print("Successful rating")
-                                let formattedFoodTitle = self.titleText.count > 20 ? "\(self.titleText.prefix(20))..." : self.titleText
                                 DispatchQueue.main.async {
-                                    self.showNotification(titleContent: "Saved Rating!", bodyContent: "You gave '\(formattedFoodTitle)' a rating of \(Int(self.ratingStepper.value))/5!")
+                                    self.rateLabel.text = "You've Rated This Dish! - \(rating)/5"
                                 }
+                                self.myReviewsVCReference?.loadReviews()
                             }
                         } else {
                             print("Failed to parse JSON response.")
@@ -163,18 +174,8 @@ class ModalViewController: UIViewController {
         modalPane.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
         modalPane.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -40).isActive = true
         modalPane.heightAnchor.constraint(equalTo: modalPane.widthAnchor, multiplier: 1.5, constant: 0).isActive = true
-
-        // Add "Modal Content" label
-        let modalLabel = UILabel()
-        modalLabel.text = titleText.count > 20 ? "\(titleText.prefix(27))..." : titleText
-        modalLabel.font = UIFont.boldSystemFont(ofSize: 18)
-        modalPane.addSubview(modalLabel)
         
-        // Position the "Modal Content" label
-        modalLabel.translatesAutoresizingMaskIntoConstraints = false
-        modalLabel.leadingAnchor.constraint(equalTo: modalPane.leadingAnchor, constant: 10).isActive = true
-        modalLabel.topAnchor.constraint(equalTo: modalPane.topAnchor, constant: 10).isActive = true
-
+        
         // Add "Close" button
         let closeButton = UIButton(type: .system)
         closeButton.setTitle("Close", for: .normal)
@@ -189,11 +190,25 @@ class ModalViewController: UIViewController {
         closeButton.translatesAutoresizingMaskIntoConstraints = false
         closeButton.trailingAnchor.constraint(equalTo: modalPane.trailingAnchor, constant: -10).isActive = true
         closeButton.topAnchor.constraint(equalTo: modalPane.topAnchor, constant: 10).isActive = true
-        closeButton.titleLabel?.topAnchor.constraint(equalTo: modalPane.topAnchor, constant: 10).isActive = true
+//        closeButton.titleLabel?.topAnchor.constraint(equalTo: modalPane.topAnchor, constant: 10).isActive = true
+
+        // Add "Modal Content" label
+        let modalLabel = MarqueeLabel()
+        modalLabel.text = titleText + "   "
+        modalLabel.font = UIFont.boldSystemFont(ofSize: 16)
+        modalPane.addSubview(modalLabel)
         
+        // Position the "Modal Content" label
+        modalLabel.translatesAutoresizingMaskIntoConstraints = false
+        modalLabel.leadingAnchor.constraint(equalTo: modalPane.leadingAnchor, constant: 10).isActive = true
+        modalLabel.topAnchor.constraint(equalTo: modalPane.topAnchor, constant: 10).isActive = true
+        
+        if let tl = closeButton.titleLabel {
+            modalLabel.trailingAnchor.constraint(equalTo: modalPane.trailingAnchor, constant: -20 - tl.intrinsicContentSize.width).isActive = true
+        }
+
         // Add rating label
-        let rateLabel = UILabel()
-        rateLabel.text = "Rate This Product"
+        rateLabel.text = "Rate This Dish"
         rateLabel.font = UIFont.boldSystemFont(ofSize: 15)
         modalPane.addSubview(rateLabel)
         
@@ -362,8 +377,9 @@ class ModalViewController: UIViewController {
         ingredientsContent.widthAnchor.constraint(equalTo: scrollView.widthAnchor, constant: -10).isActive = true
 
         // Add tap gesture recognizer to the background view
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(closeModal))
-        view.addGestureRecognizer(tapGesture)
+//        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(closeModal))
+//        view.addGestureRecognizer(tapGesture)
+        modalLabel.restartLabel()
     }
 
     @objc func closeModal() {

@@ -23,7 +23,7 @@ class MenuCell: UITableViewCell {
     
     let LEFT_OFFEST = 20.0
     
-    var iconDict: [String: String] = ["Vegan": "leaf.fill", "Gluten-Free": "g.circle.fill", "Halal": "h.circle", "Vegetarian": "v.circle"]
+    var iconDict: [String: String] = ["Vegan": "leaf.fill", "Gluten-Free": "g.circle.fill", "Halal": "h.circle", "Vegetarian": "v.circle", "Top 9 Free": "9.circle"]
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -35,7 +35,6 @@ class MenuCell: UITableViewCell {
         
         menuItemLabel.type = .continuous
         menuItemLabel.font = UIFont.boldSystemFont(ofSize: 15)
-        menuItemLabel.speed = .duration(20)
         menuItemLabel.animationCurve = .linear
     }
     
@@ -47,7 +46,7 @@ class MenuCell: UITableViewCell {
         menuCalorieLabel.text = String(menuItem.calories) + " Calories"
         
         if menuItem.rating != -1.0 {
-            ratingLabel.text = "Rating: \(String(format: "%.1f", menuItem.rating))/5.0"
+            ratingLabel.text = String(format: "%.1f", menuItem.rating)
             ratingBar.isHidden = false
             let widthMultiplier = (0.5 / 5.0) * menuItem.rating
             rectangleWidthConstraint.isActive = false
@@ -56,6 +55,10 @@ class MenuCell: UITableViewCell {
         } else {
             ratingBar.isHidden = true
             ratingLabel.text = "Unrated"
+            
+            rectangleWidthConstraint.isActive = false
+            rectangleWidthConstraint = ratingBar.trailingAnchor.constraint(equalTo: self.centerXAnchor)
+            rectangleWidthConstraint.isActive = true
         }
 
         for subview in icons.arrangedSubviews {
@@ -90,7 +93,7 @@ class MenuCell: UITableViewCell {
         menuItemLabelTrailingConstraint.isActive = false
         menuItemLabelTrailingConstraint = menuItemLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -totalWidth - LEFT_OFFEST)
         menuItemLabelTrailingConstraint.isActive = true
-        menuItemLabel.text = menuItem.title
+        menuItemLabel.text = menuItem.title + "   "
         menuItemLabel.labelize = false
         menuItemLabel.restartLabel()
 //
@@ -151,8 +154,8 @@ class MenuCell: UITableViewCell {
         
         // Add rating label
         ratingLabel.translatesAutoresizingMaskIntoConstraints = false
-        ratingLabel.font = UIFont.systemFont(ofSize: 12)
-        ratingLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor, constant: 0).isActive = true
+        ratingLabel.font = UIFont.boldSystemFont(ofSize: 15)
+        ratingLabel.centerXAnchor.constraint(equalTo: ratingBar.trailingAnchor, constant: 0).isActive = true
         ratingLabel.bottomAnchor.constraint(equalTo: ratingBar.topAnchor, constant: -2).isActive = true
         
         let zeroLabel = UILabel()

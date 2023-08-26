@@ -13,21 +13,23 @@ class ViewController: UITabBarController {
         super.viewDidLoad()
         
         // Instantiate view controllers for different views
-        let home = HomeVC()
-        let settings = ReviewsVC()
-        let credits = CreditsVC()
+        let menus = HomeVC()
+        let reviews = ReviewsVC()
+        let about = AboutVC()
+        
+        menus.myReviewsVCReference = reviews
         
         // Wrap each view controller in a UINavigationController and set titles
-        let homeNavController = UINavigationController(rootViewController: home)
-        let settingsNavController = UINavigationController(rootViewController: settings)
-        let creditsNavController = UINavigationController(rootViewController: credits)
+        let menusNavController = UINavigationController(rootViewController: menus)
+        let reviewsNavController = UINavigationController(rootViewController: reviews)
+        let aboutNavController = UINavigationController(rootViewController: about)
         
-        homeNavController.title = "Menus"
-        settingsNavController.title = "My Reviews"
-        creditsNavController.title = "About"
+        menusNavController.title = "Menus"
+        reviewsNavController.title = "My Reviews"
+        aboutNavController.title = "About"
         
         // Assign view controllers to the tab bar
-        self.setViewControllers([homeNavController, settingsNavController, creditsNavController], animated: true)
+        self.setViewControllers([menusNavController, reviewsNavController, aboutNavController], animated: true)
         
         // Set tab bar colors
         self.tabBar.tintColor = .tintColor

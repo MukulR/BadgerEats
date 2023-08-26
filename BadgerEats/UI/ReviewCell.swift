@@ -92,7 +92,7 @@ class ReviewCell: UITableViewCell {
         // Add rating label
         self.addSubview(ratingLabel)
         ratingLabel.translatesAutoresizingMaskIntoConstraints = false
-        ratingLabel.font = UIFont.systemFont(ofSize: 12)
+        ratingLabel.font = UIFont.boldSystemFont(ofSize: 15)
         ratingLabelXConstraint = ratingLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor, constant: 0)
         ratingLabelXConstraint.isActive = true
         ratingLabel.bottomAnchor.constraint(equalTo: ratingBar.topAnchor, constant: -2).isActive = true
